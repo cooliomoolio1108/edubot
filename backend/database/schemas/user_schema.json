@@ -1,0 +1,29 @@
+{
+  "$jsonSchema": {
+    "bsonType": "object",
+    "required": [
+      "_id",
+      "created_at",
+      "email",
+      "is_active",
+      "last_login",
+      "name",
+      "oid",
+      "role",
+      "tenant_id",
+      "updated_at"
+    ],
+    "properties": {
+      "_id": { "bsonType": "objectId" },
+      "created_at": { "bsonType": "date" },
+      "email": { "bsonType": "string" },
+      "is_active": { "bsonType": "bool" },
+      "last_login": { "bsonType": "date" },
+      "name": { "bsonType": "string" },
+      "oid": { "bsonType": "string" },
+      "role": { "enum": ["admin", "staff", "student"] },
+      "tenant_id": { "bsonType": "string" },
+      "updated_at": { "bsonType": "date" }
+    }
+  }
+}

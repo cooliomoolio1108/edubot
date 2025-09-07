@@ -1,0 +1,29 @@
+{
+  "$jsonSchema": {
+    "bsonType": "object",
+    "required": [
+      "_id",
+      "course_code",
+      "title",
+      "title_updated",
+      "user_id"
+    ],
+    "properties": {
+      "_id": {
+        "bsonType": "objectId"
+      },
+      "course_code": {
+        "bsonType": "string"
+      },
+      "title": {
+        "bsonType": "string"
+      },
+      "title_updated": {
+        "bsonType": "bool"
+      },
+      "user_id": {
+        "bsonType": "string"
+      }
+    }
+  }
+}
