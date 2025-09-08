@@ -1,9 +1,5 @@
 import streamlit as st
 
-admin_page = st.Page("pages/Admin.py", title='Admin', icon=":material/person_add:")
-chat_page = st.Page("pages/chat.py", title="Chats")
-
-for_admin = [admin_page, chat_page]
 page_dict = {}
 def authenticated_menu():
     if "user" not in st.session_state:
