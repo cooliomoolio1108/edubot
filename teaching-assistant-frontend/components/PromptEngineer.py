@@ -32,7 +32,7 @@ def render():
                     
     if st.session_state.current_prompt:
         current_prompt = st.session_state.current_prompt
-        st.markdown(f' ## {current_prompt.get('name', 'Unknown')}')
+        st.markdown(f"## {current_prompt.get('name', 'Unknown')}")
         editable = st.session_state.prompt_editable
         if not editable:
             if st.button("✎", key="edit_prompt_button_on"):

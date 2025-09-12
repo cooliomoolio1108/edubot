@@ -1,4 +1,5 @@
-from . import prompt_collection, serialize_id
+from database import prompt_collection
+from . import serialize_id
 from bson import ObjectId
 
 def get_all_prompts():

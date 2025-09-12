@@ -3,7 +3,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import AzureChatOpenAI
 import os
 from dotenv import load_dotenv
-from ..services.mongodb_service import prompt_collection
+from database import prompt_collection
 import re
 from urllib.parse import quote
 
@@ -41,31 +41,33 @@ def build_course_scoped_prompt(doc):
         - system_template
         - human_template
     """
+    if not doc:
+        return generic_prompt
     return ChatPromptTemplate.from_messages([
-        ("system", doc["system_template"]),
-        ("human", doc["human_template"])
+        ("system", doc.get("system_template")),
+        ("human", doc.get("human_template"))
     ])
 
 load_dotenv()
-# COURSE_SCOPED_PROMPT = ChatPromptTemplate.from_messages([
-#     ("system",
-#      "You are a course-scoped assistant. Use the provided CONTEXT and HISTORY to answer. "
-#      "If the user message is a greeting (e.g., 'hi', 'hello', 'hey'), respond with a short greeting and guide them to ask a question about the course, even if there is no relevant CONTEXT/HISTORY. Do not refuse in this case."
-#      "If the question cannot be answered from CONTEXT or HISTORY or appears out-of-scope for the course "
-#      "'{course_title}', respond with: "
-#      "'This chat is limited to '{course_title}'; I couldn't find enough context to answer.' "
-#      "Answer concisely and include inline citations like [source]. Do not invent citations."
-#      "Do not include the words 'CONTEXT', 'HISTORY', or meta-references like 'in the context' or 'based on the context' in your answer."
-#     ),
-#     ("human",
-#      "HISTORY:\n{history}\n\n"
-#      "CONTEXT:\n{context}\n\n"
-#      "QUESTION:\n{question}\n\n"
-#      "Requirements:\n"
-#      "- Rely strictly on CONTEXT and HISTORY.\n"
-#      "- Cite sources with [source] where helpful.\n"
-#      "- If insufficient context, use the refusal message above.\n")
-# ])
+generic_prompt = ChatPromptTemplate.from_messages([
+    ("system",
+     "You are a course-scoped assistant. Use the provided CONTEXT and HISTORY to answer. "
+     "If the user message is a greeting (e.g., 'hi', 'hello', 'hey'), respond with a short greeting and guide them to ask a question about the course, even if there is no relevant CONTEXT/HISTORY. Do not refuse in this case."
+     "If the question cannot be answered from CONTEXT or HISTORY or appears out-of-scope for the course "
+     "'{course_title}', respond with: "
+     "'This chat is limited to '{course_title}'; I couldn't find enough context to answer.' "
+     "Answer concisely and include inline citations like [source]. Do not invent citations."
+     "Do not include the words 'CONTEXT', 'HISTORY', or meta-references like 'in the context' or 'based on the context' in your answer."
+    ),
+    ("human",
+     "HISTORY:\n{history}\n\n"
+     "CONTEXT:\n{context}\n\n"
+     "QUESTION:\n{question}\n\n"
+     "Requirements:\n"
+     "- Rely strictly on CONTEXT and HISTORY.\n"
+     "- Cite sources with [source] where helpful.\n"
+     "- If insufficient context, use the refusal message above.\n")
+])
 
 llm_stream = AzureChatOpenAI(
     azure_endpoint=os.getenv("AZ_OPENAI_ENDPOINT"),
@@ -78,10 +80,16 @@ llm_stream = AzureChatOpenAI(
 )
 
 def generate(state: State):
+    print("generate1")
+    print(state['course_id'])
     prompt = get_prompt(state['course_id'])
+    print("generate2")
     COURSE_SCOPED_PROMPT = build_course_scoped_prompt(prompt)
+    print("generate3")
     hist_text = "\n".join(f"{m.get('role','user')}: {m.get('content','')}" for m in state['history'])
+    print("generate4")
     messages = COURSE_SCOPED_PROMPT.invoke({"history": hist_text, "question": state["question"], "context": state['context'], "course_title": state['course_title']})
+    print("generate5")
     print("============================")
     print("Sending to GPT:", messages)
     print("============================")

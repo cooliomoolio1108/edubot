@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from database.course_crud import find_course_details, find_courses
+from services.course_services import find_course_details, find_courses
 from models.course import Course
 from pydantic import ValidationError
 from utils.validators import success_response, fail_response, error_response

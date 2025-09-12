@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from rag.services.openai_service import generate_title_for_chat, get_openai_response
-from database.conversation_crud import submit_chat_message, get_chat_message, get_convos, edit_title, delete_convo
-from database.message_crud import get_chat_message, get_chat_message_by_convoid, delete_message
+from services.conversation_services import submit_chat_message, get_chat_message, get_convos, edit_title, delete_convo
+from services.message_services import get_chat_message, get_chat_message_by_convoid, delete_message
 
 conversation_routes = Blueprint("conversation", __name__)
 

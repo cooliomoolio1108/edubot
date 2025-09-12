@@ -1,8 +1,9 @@
-from . import feedback_collection
+from database import feedback_collection
+from . import serialize_id
 
 def get_feedback():
-    feedback_list = list(feedback_collection.find({}, {"_id": 0}))  # Exclude MongoDB _id
-    return feedback_list
+    feedbacks = feedback_collection.find()
+    return [serialize_id(f) for f in feedbacks]
 
 def get_feedback_details():
     feedback_details = list(feedback_collection.find({}, {"_id": 0}))

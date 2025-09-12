@@ -1,4 +1,4 @@
-from . import file_collection
+from database import file_collection
 from datetime import datetime
 from . import serialize_id, clean_data
 from models.file import File
@@ -6,7 +6,10 @@ import os
 from bson import ObjectId
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from rag.services.chroma_service import vector_store
+from chroma import get_vector_store
+from .gcp_services import view_file
+
+vector_store = get_vector_store()
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 DOCUMENTS_DIR = os.path.join(BASE_DIR, "backend", "documents")
@@ -23,6 +26,10 @@ def find_files_by_course(course_id: str):
 
 def find_file_by_id(id):
     file_doc = file_collection.find_one({"_id": ObjectId(id)})
+    return serialize_id(file_doc)
+
+def find_file_by_file_id(file_id):
+    file_doc = file_collection.find_one({"file_id": file_id})
     return serialize_id(file_doc)
 
 def save_files_to_db(data):

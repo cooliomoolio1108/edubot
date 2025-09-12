@@ -1,5 +1,6 @@
 import streamlit as st
 import jwt, time
+from datetime import datetime
 import os
 from dotenv import load_dotenv
 from streamlit_cookies_controller import CookieController
@@ -36,6 +37,7 @@ def bootstrap_and_persist():
             st.session_state["login_token"] = cookie
             st.session_state["user"] = claims
             st.session_state["logged_in"] = True
+            st.session_state.user["last_login"] = datetime.utcnow()
             st.rerun()
         else:
             controller.remove("login_token")
@@ -43,11 +45,16 @@ def bootstrap_and_persist():
     elif "login_token" in st.session_state:
         st.session_state["logged_in"] = True
 
-def require_login(login_url="http://localhost:5050/auth/login"):
+def require_login(login_url=os.getenv("FLASK_LOGIN")):
     bootstrap_and_persist()
 
     if not st.session_state.get("logged_in"):
         st.write("Navigate to Home and Login with SSO")
+        if st.button(label="Login ->"):
+            st.markdown(
+                f"<meta http-equiv='refresh' content='0; url={login_url}'>",
+                unsafe_allow_html=True,
+            )
         st.stop()
 
     email = (st.session_state["user"].get("email") or "").lower()

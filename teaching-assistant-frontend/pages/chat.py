@@ -18,6 +18,7 @@ from utils.auth import require_login
 from components import message_toolbar, sidebar_menu
 import time
 import re
+from utils.debug import debug_session_state
 
 st.set_page_config(page_title="Chat Panel", layout="wide")
 inject_custom_css()
@@ -58,7 +59,7 @@ def create_convo():
     options = st.session_state.courses
     if options and isinstance(options, (list, set, tuple)):
         course_options = {
-            f"{option['course_name']}": option['id']  # Display title, store code
+            f"{option['course_name']}": option['_id']  # Display title, store code
             for option in options
         }
         option = st.selectbox(
@@ -169,7 +170,7 @@ if st.session_state.current_conversation:
                 # if st.button("sources", key=f'viewfile_{idx}'):
                 #     show_files()
             if msg["role"] == 'assistant':
-                message_toolbar.render(idx)
+                message_toolbar.render(idx, msg)
         last_msg_count = idx
             # st.markdown(msg.get("sources", ""))
 
@@ -193,6 +194,7 @@ if st.session_state.current_conversation:
         # TODO: Add GPT response handler here (send to backend, display, and save)
         with st.spinner("Thinking..."):
             response = send_to_gpt(convo_id, prompt, course_id, course_title)
+        print(response)
         answer = response.get('answer', '')
         source = response.get('sources', '')
         assistant_msg = {"role": "assistant", "content": answer, "sources": source}

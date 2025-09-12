@@ -1,5 +1,5 @@
 import streamlit as st
-
+from components import background
 def inject_custom_css():
     css = """
     <style>
@@ -97,7 +97,7 @@ def inject_custom_css():
         transition: all 0.4s ease;  /* slower and smooth */
         background: rgb(0, 0, 0, 0);
         border: 0;
-        padding: 0.2rem !important;  /* override inline style */
+        padding: 0.54rem !important;  /* override inline style */
         justify-content: flex-start;  /* align text left */
         width: inherit !important;       /* make full-width */
         box-sizing: border-box;       /* include padding in width */
@@ -140,4 +140,14 @@ def inject_custom_css():
     </style>
     """
     st.markdown(css, unsafe_allow_html=True)
-    st.logo("assets/chatbot.png", size='large')
+    st.markdown("""
+        <style>
+        [data-testid="stSidebarLogo"] {
+            content: url(https://storage.googleapis.com/teach-bot/assets/chatbot.png); /* Replace image */
+            width: 120px;
+            margin: auto;
+            padding: 10px;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+    background.render()

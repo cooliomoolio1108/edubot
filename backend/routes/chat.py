@@ -1,8 +1,8 @@
 # routes/chat_routes.py
 from flask import Blueprint, request, jsonify, Response, stream_with_context
 from rag.services.openai_service import get_openai_response
-from database.message_crud import get_chat_message_by_convoid, submit_chat_message
-from database.prompt_crud import get_all_prompts, get_prompt
+from services.message_services import get_chat_message_by_convoid, submit_chat_message
+from services.prompt_services import get_all_prompts, get_prompt
 from rag.graph.graph import graph
 
 chat_routes = Blueprint("chat", __name__)

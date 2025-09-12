@@ -28,4 +28,3 @@ st-cookie>=1.0
 streamlit-pdf-viewer
 pyautogui
 streamlit-extras
-gunicorn

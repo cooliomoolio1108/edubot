@@ -1,0 +1,37 @@
+services:
+  frontend:
+    build: ./teaching-assistant-frontend
+    ports:
+      - "8501:8501"
+    depends_on:
+      - backend
+    env_file:
+      - .env
+
+  backend:
+    build: ./backend
+    ports:
+      - "5050:5050"
+    env_file:
+      - .env.docker
+    volumes:
+      - chroma_data:/chroma
+    # command: sh -c "python seed_db.py && gunicorn -w 1 -b 0.0.0.0:5050 app:create_app()"
+    depends_on:
+      - mongo
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/gcp-key.json
+      - GCP_BUCKET_NAME=teach-bot
+
+  mongo:
+    image: mongo:6.0
+    container_name: mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:
+  chroma_data:

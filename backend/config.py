@@ -15,3 +15,4 @@ class Config:
     FRONTEND_URL = os.getenv("STREAMLIT_URL")
     JWT_SECRET = os.getenv("JWT_SECRET")
     CALLBACK_URL = os.getenv("CALLBACK")
+

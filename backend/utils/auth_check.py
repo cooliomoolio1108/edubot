@@ -1,7 +1,7 @@
 from flask import current_app, url_for, request, g
 from functools import wraps
 import jwt, time
-from database.user_crud import get_user
+from services.user_services import get_user
 from datetime import datetime, timezone
 from utils.validators import success_response, fail_response, error_response
 
@@ -30,6 +30,7 @@ def require_auth(f):
     return decorated
 
 def upsert_user_from_payload(db, payload: dict) -> dict:
+    print("Claims in function:", payload)
     oid   = payload.get("oid")
     email = (payload.get("preferred_username") or payload.get("email") or "").lower()
     name  = payload.get("name") or ""

@@ -16,4 +16,4 @@ class User(BaseModel):
 
     class Config:
         populate_by_name = True
-        orm_mode = True
+        from_attributes = True

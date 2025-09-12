@@ -1,4 +1,5 @@
-from . import message_collection, serialize_id, receive_one
+from database import message_collection
+from . import serialize_id, receive_one
 from datetime import datetime
 
 window = 8

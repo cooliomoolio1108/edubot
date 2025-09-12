@@ -34,7 +34,7 @@ def process_json(resp, action: str, by: str = "single"):
     # --- Success (200 OK) ---
     if status_code == 200 and status == "success":
         if action != "nil":
-            toast.render(status, action)
+            toast.render(status, information)
         return payload.get("data", {} if by == "single" else [])
 
     # --- Not Found (404) ---
@@ -199,11 +199,11 @@ def upload_files(data, files):
 
     return None
 
-def embed_file(file_id: str):
+def embed_file(_id: str):
     try:
         headers = header(st.session_state["login_token"])
-        response = requests.post(EMBED_API_URL, json={"file_id": file_id}, headers=headers)
-        return process_json(response, "Files embedded.")
+        response = requests.post(EMBED_API_URL, json={"_id": _id}, headers=headers)
+        return process_json(response, "result")
     except Exception as e:
         return e
 
@@ -235,4 +235,11 @@ def get_prompts():
         return r.json()  # always return JSON if no exception
     except requests.exceptions.RequestException as e:
         st.error(f"Error fetching prompts: {e}")
+        return None
+
+def get_feedbacks():
+    try:
+        r = requests.get(FDBK_API_URL)
+        return process_json(r, "nil")
+    except Exception as e:
         return None

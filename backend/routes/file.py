@@ -1,13 +1,16 @@
 import os
 from flask import Blueprint, jsonify, request
-from database.file_crud import find_files, find_files_by_course, save_files_to_db, find_file_by_id, embed_single_file, delete_file_by_id, delete_embed, find_embeds
+from services.file_services import find_files, find_files_by_course, save_files_to_db, find_file_by_id, embed_single_file, delete_file_by_id, delete_embed, find_embeds
+from services.gcp_services import open_pdf_from_gcp_stream, upload_file_to_gcp
 from models.file import File
 from utils.validators import success_response, fail_response, error_response
 from pydantic import ValidationError
-from database import clean_data
+from services import clean_data
 from datetime import datetime
 from werkzeug.utils import secure_filename
-from auth.auth_check import require_auth
+from utils.auth_check import require_auth
+from utils.validators import success_response, fail_response, error_response
+from services.embed_services import embed_pdf_bytes
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 DOCUMENTS_DIR = os.path.join(BASE_DIR, "backend", "documents")
@@ -60,14 +63,18 @@ def receive_file():
         "updated_at": datetime.now()
     }
     filename = secure_filename(uploaded.filename)
-
-    folder_path = os.path.join(DOCUMENTS_DIR, request.form.get("course_id", "untagged"))
-    os.makedirs(folder_path, exist_ok=True)
-    save_path = os.path.join(folder_path, filename)
-    uploaded.save(save_path)
-
+    course_id = request.form.get("course_id", "uncategorized")
+    gcp_path = f"courses/{course_id}/{uploaded.filename}"
+    url = upload_file_to_gcp(uploaded, gcp_path)
+    # folder_path = os.path.join(DOCUMENTS_DIR, request.form.get("course_id", "untagged"))
+    # os.makedirs(folder_path, exist_ok=True)
+    # save_path = os.path.join(folder_path, filename)
+    # uploaded.save(save_path)
+    if not url:
+        return error_response("File(s) not uploaded")
     metadata["file_name"] = filename
-    metadata["path"] = save_path
+    # metadata["path"] = save_path
+    metadata["path"] = gcp_path
     metadata["embedded"] = False
 
     result = save_files_to_db(metadata)
@@ -90,45 +97,28 @@ def delete_file(id):
 @require_auth
 def embed_file():
     try:
-        file_id = request.json.get("file_id")
-        if not file_id:
-            return fail_response("No file_ids provided", 400)
+        _id = request.json.get("_id")
+        if not _id:
+            return fail_response("No file_id provided", 400)
 
-        embedded_files = []
-        failed_files = []
-        file_doc = find_file_by_id(file_id)
-        print(file_doc)
-        if file_doc and not file_doc.get("embedded"):
-            try:
-                result = embed_single_file(file_doc)
-                if result.get("status") == "embedded":
-                    embedded_files.append({
-                        "file_id": file_id,
-                        "doc_count": result.get("doc_count", 0)
-                    })
-                else:
-                    failed_files.append({
-                        "file_id": file_id,
-                        "reason": result.get("reason", "Unknown")
-                    })
-            except Exception as e:
-                failed_files.append({
-                    "file_id": file_id,
-                    "reason": str(e)
-                })
+        file_doc = find_file_by_id(_id)
+        if not file_doc:
+            return fail_response("File not found", 404)
+
+        if file_doc.get("embedded", False):
+            return fail_response("File is already embedded", 400)
+
+        doc = open_pdf_from_gcp_stream(file_doc.get("path", False))
+        result = embed_pdf_bytes(doc, file_doc)
+        if result.get("status") == "embedded":
+            return success_response(f"Embed success: {result.get('doc_count')} chunks embedded")
         else:
-            failed_files.append({
-                "file_id": file_id,
-                "reason": "File not found or already embedded"
-            })
-
-        return success_response({
-            "embedded_files": embedded_files,
-            "failed_files": failed_files
-        })
+            return fail_response(f"Embed failed: {result.get('reason', 'Unknown reason')}", 500)
 
     except Exception as e:
-        return error_response(e)
+        # Catch unexpected errors
+        return error_response(f"Embed error: {str(e)}", 500)
+
 
 @file_routes.route("/files/embed", methods=["GET"])
 def fetch_embeds():

@@ -1,4 +1,4 @@
-from . import conversation_collection
+from database import conversation_collection
 from bson import ObjectId
 
 def submit_chat_message(message_data):

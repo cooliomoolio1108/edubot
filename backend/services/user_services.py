@@ -1,4 +1,5 @@
-from . import user_collection, serialize_id
+from database import user_collection
+from . import serialize_id
 from bson import ObjectId
 
 def get_user(id):

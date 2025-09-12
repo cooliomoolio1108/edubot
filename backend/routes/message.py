@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from database.message_crud import get_chat_message, submit_chat_message, get_chat_message_by_convoid
+from services.message_services import get_chat_message, submit_chat_message, get_chat_message_by_convoid
 
 message_routes = Blueprint("message", __name__)
 

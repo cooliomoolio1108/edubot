@@ -9,21 +9,7 @@ from pymongo.errors import PyMongoError
 from bson import ObjectId
 from bson.errors import InvalidId
 from typing import List, Type
-
 load_dotenv()
-
-MONGO_URI = os.getenv("MONGO_URI")
-client = MongoClient(MONGO_URI)
-db = client["teaching_assistant"]
-
-feedback_collection = db["feedback"]
-user_collection = db["user"]
-conversation_collection =  db["conversation"]
-message_collection = db["message"]
-chat_collection = db['chat']
-course_collection = db['course']
-file_collection = db['file']
-prompt_collection = db['prompt']
 
 def check_connection():
     try:

@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from database.user_crud import get_user, create_user, get_users, delete_user_from_db, edit_user_from_db, get_user_by_oid
+from services.user_services import get_user, create_user, get_users, delete_user_from_db, edit_user_from_db, get_user_by_oid
 from models.user import User
 from utils.validators import success_response, fail_response, error_response
 from pydantic import ValidationError

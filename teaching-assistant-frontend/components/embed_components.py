@@ -90,7 +90,7 @@ def display_file(course):
                 if cols[2].button("Embed", key=f"embed_n_idx{_}", width='stretch'):
                     st.toast("Embedding..")
                     result = embed_file(row['_id'])
-                    st.rerun()
+                    # st.rerun()
                 if cols[3].button("Delete", key=f"delete_n_idx{_}", width='stretch'):
                     result = delete_files(row["_id"])
                     time.sleep(3)

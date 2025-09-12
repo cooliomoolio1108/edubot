@@ -1,6 +1,6 @@
 # rag/nodes/load_history.py
 from rag.graph.state import State
-from ..services.mongodb_service import message_collection
+from database import message_collection
 
 WINDOW = 8
 

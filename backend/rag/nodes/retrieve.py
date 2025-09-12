@@ -1,9 +1,10 @@
 from rag.graph.state import State
-from rag.services.chroma_service import vector_store
+from chroma import get_vector_store
+
+vector_store = get_vector_store()
 
 def retrieve(state: State):
     print("Retrieving...")
-
     docs = vector_store.similarity_search(
         state["question"],
         k=3,

@@ -1,5 +1,5 @@
 #cleaned
-from . import course_collection
+from database import course_collection
 from . import serialize_id
 from bson import ObjectId
 from bson.errors import InvalidId

@@ -1,6 +1,6 @@
 import time, jwt
 from flask import current_app
-from database.user_crud import get_user_by_oid
+from services.user_services import get_user_by_oid
 from datetime import datetime, timedelta
 
 def create_login_token(user_email, name, oid, role):

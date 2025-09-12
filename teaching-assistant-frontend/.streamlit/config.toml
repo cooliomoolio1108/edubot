@@ -1,0 +1,10 @@
+[client]
+showSidebarNavigation = false
+
+[theme]
+base="light"
+primaryColor="#001160"
+textColor="#000000"
+
+[ui]
+layout='wide'
