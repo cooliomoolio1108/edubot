@@ -1,0 +1,10 @@
+/backend/chroma_langchain_db
+/backend/documents
+**__pycache__
+**.env
+**gcp-key.json
+/myEnv/
+**test.py
+**secrets.toml
+**DS_store
+**.env.docker
