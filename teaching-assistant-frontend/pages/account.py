@@ -4,9 +4,9 @@ from utils.auth import require_login
 from utils.styling import inject_custom_css
 from datetime import datetime
 
+require_login()
 inject_custom_css()
 authenticated_menu()
-require_login()
 st.set_page_config(layout='wide')
 
 st.title("Profile")

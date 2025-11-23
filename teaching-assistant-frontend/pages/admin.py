@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from utils.styling import inject_custom_css
 from components.dashboard_card import dashboard_card
 from components import dashboard_cards_function as card
-from components import user_table, enrolment_table
+from components import user_table, enrolment_table, course_table
 
 require_login()
 load_dotenv()
@@ -33,3 +33,5 @@ with tabs[0]:
     user_table.render_user_admin()
 with tabs[1]:
     enrolment_table.render_enrolment()
+with tabs[2]:
+    course_table.render()

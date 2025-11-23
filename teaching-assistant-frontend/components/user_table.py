@@ -36,68 +36,71 @@ def render_user_admin():
     edit_mode = st.session_state.edit_mode
     user_data = st.session_state.users
     # Action buttons
-    if user_data:
-        if not edit_mode:
-            col1, _, _ = st.columns(3)
-            with col1:
-                with st.container(horizontal=True):
-                    if st.button("Edit Users", key='edit_mode_on', use_container_width=True, ):
-                        st.session_state.disabled = False
-                        st.session_state.edit_mode = True
+    try:
+        if user_data:
+            if not edit_mode:
+                col1, _, _ = st.columns(3)
+                with col1:
+                    with st.container(horizontal=True):
+                        if st.button("Edit Users", key='edit_mode_on', width="stretch", ):
+                            st.session_state.disabled = False
+                            st.session_state.edit_mode = True
+                            st.rerun()
+                        st.button("ⓘ", key='crud_help', type="tertiary", help="Press 'Edit' button to add, edit or delete users. Make sure to press 'Confirm Edits' to save them")
+            else:
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    if st.button("❌", key='edit_mode_off', width="stretch"):
+                        st.session_state.disabled = True
+                        st.session_state.edit_mode = False
                         st.rerun()
-                    st.button("ⓘ", key='crud_help', type="tertiary", help="Press 'Edit' button to add, edit or delete users. Make sure to press 'Confirm Edits' to save them")
+                with col2:
+                    if st.button("✅", key="update_users", width="stretch"):
+                        changes = st.session_state.changed
+                        rawdata = st.session_state.users
+                        for row_idx in changes["deleted_rows"]:
+                            print("row_idx:", row_idx)
+                            user_dict = rawdata[row_idx]
+                            print("user_dict:",user_dict)
+                            if isinstance(user_dict, dict):
+                                user_oid = user_dict.get('_id', '')
+                                delete_user(user_oid)
+                        for key, items in changes["edited_rows"].items():
+                            key_int = int(key)
+                            user_dict = rawdata[key_int]
+                            if isinstance(user_dict, dict):
+                                user_id = user_dict.get('_id', '')
+                                edit_user(user_id, items)
+                        added = changes['added_rows']
+                        if added and isinstance(added, list):
+                            add_users(added)
+                        st.session_state.disabled = True
+                        st.session_state.edit_mode = False
+                        st.session_state.users = users_df
+                        st.rerun()
+                with col3:
+                    if st.button("✚✚ by bulk", key='add_users', width="stretch"):
+                        add_users_dialog()
+            needed_columns = ['name', 'email', 'is_active', 'role']
+            df = pd.DataFrame(user_data)
+            df.index += 1
+            df = df[needed_columns]
+            users_df = st.data_editor(
+                df,
+                key='changed',
+                num_rows="dynamic",
+                column_config={
+                    'name': st.column_config.Column("Name"),
+                    'email': st.column_config.Column('Email'),
+                    'is_active': st.column_config.SelectboxColumn(
+                        'Active Status', options=[True, False], default=True
+                    )
+                },
+                disabled=st.session_state.disabled,
+            )
         else:
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                if st.button("❌", key='edit_mode_off', use_container_width=True):
-                    st.session_state.disabled = True
-                    st.session_state.edit_mode = False
-                    st.rerun()
-            with col2:
-                if st.button("✅", key="update_users", use_container_width=True):
-                    changes = st.session_state.changed
-                    rawdata = st.session_state.users
-                    for row_idx in changes["deleted_rows"]:
-                        print("row_idx:", row_idx)
-                        user_dict = rawdata[row_idx]
-                        print("user_dict:",user_dict)
-                        if isinstance(user_dict, dict):
-                            user_oid = user_dict.get('_id', '')
-                            delete_user(user_oid)
-                    for key, items in changes["edited_rows"].items():
-                        key_int = int(key)
-                        user_dict = rawdata[key_int]
-                        if isinstance(user_dict, dict):
-                            user_id = user_dict.get('_id', '')
-                            edit_user(user_id, items)
-                    added = changes['added_rows']
-                    if added and isinstance(added, list):
-                        add_users(added)
-                    st.session_state.disabled = True
-                    st.session_state.edit_mode = False
-                    st.session_state.users = users_df
-                    st.rerun()
-            with col3:
-                if st.button("✚✚ by bulk", key='add_users', use_container_width=True):
-                    add_users_dialog()
-        needed_columns = ['name', 'email', 'is_active', 'role']
-        df = pd.DataFrame(user_data)
-        df.index += 1
-        df = df[needed_columns]
-        users_df = st.data_editor(
-            df,
-            key='changed',
-            num_rows="dynamic",
-            column_config={
-                'name': st.column_config.Column("Name"),
-                'email': st.column_config.Column('Email'),
-                'is_active': st.column_config.SelectboxColumn(
-                    'Active Status', options=[True, False], default=True
-                )
-            },
-            disabled=st.session_state.disabled,
-        )
-    else:
-        empty_display.render()
+            empty_display.render()
+    except Exception as e:
+        empty_display.render(user_data, "user_table_admin")
 
-    debug_session_state()
+    # debug_session_state()

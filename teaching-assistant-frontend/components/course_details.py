@@ -4,7 +4,6 @@ from utils.admin_functions import get_course
 from streamlit_extras.metric_cards import style_metric_cards
 
 def render(course: dict):
-    st.sidebar.markdown('-----------')
     if course and isinstance(course, dict):
         details = course
         col1, col2= st.columns(2)

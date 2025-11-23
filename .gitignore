@@ -8,3 +8,16 @@
 **secrets.toml
 **DS_store
 **.env.docker
+/backend/documents
+/backend/embedding_tests
+.env.docker
+/teaching-assistant-frontend/chat_logs.log
+**/__pycache__/
+**/.pytest_cache/
+**/.streamlit/**/*.toml (generated files)
+teaching-assistant-frontend/node_modules/
+teaching-assistant-frontend/.streamlit/
+**/.dockerignore (not needed but harmless)
+**/.env.docker
+docker-compose override files
+

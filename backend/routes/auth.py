@@ -64,12 +64,12 @@ def authorized():
     domain = domain.strip().lower()
     print("The domain:", domain)
 
-    if not domain.endswith("ntu.edu.sg"):
-        return render_template(
-            "error.html",
-            message="Access denied: NTU emails only",
-            home_url=current_app.config["FRONTEND_URL"]
-        )
+    # if not domain.endswith("ntu.edu.sg"):
+    #     return render_template(
+    #         "error.html",
+    #         message="Access denied: NTU emails only",
+    #         home_url=current_app.config["FRONTEND_URL"]
+    #     )
 
     print("Claims:", claims)
     user = upsert_user_from_payload(user_collection, claims)

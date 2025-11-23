@@ -1,26 +1,25 @@
 from rag.graph.state import State
-from chroma import get_vector_store
-
-vector_store = get_vector_store()
+from . import vector_store, embed_model
 
 def retrieve(state: State):
-    print("Retrieving...")
-    docs = vector_store.similarity_search(
-        state["question"],
-        k=3,
+    main_emb = state.get("main_emb")
+    if main_emb and len(main_emb) > 0:
+        query_embedding = state["main_emb"]
+    else:
+        query_embedding = embed_model.embed_query(state["query"])
+    docs = vector_store.similarity_search_by_vector(
+        query_embedding,
+        k=5,
         filter={"course_id": state["course_id"]}
     )
 
     for i, d in enumerate(docs, 1):
         print(f"[{i}] Source: {d.metadata.get('source')}, Page: {d.metadata.get('page')}")
 
-    # Text form for the LLM
     context_text = "\n\n".join(
         f"{d.page_content}\n(Source: {d.metadata.get('source')}, Page: {d.metadata.get('page')})"
         for d in docs
     )
-
-    # Keep the raw docs too, so later nodes (e.g., generate) can access metadata easily
     sources = [
         {
             "source": d.metadata.get("source"),
@@ -29,9 +28,8 @@ def retrieve(state: State):
         }
         for d in docs
     ]
-    test = {
+    chunks = {
         "context": context_text,   # for prompt
         "sources": sources,        # minimal metadata list
     }
-    print("Retrieved: ", test)
-    return test
+    return chunks

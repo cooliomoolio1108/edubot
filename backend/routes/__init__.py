@@ -7,6 +7,7 @@ from .message import message_routes
 from .chat import chat_routes
 from .course import course_routes
 from .file import file_routes
+from .request import request_routes
 
 def register_routes(app):
     app.register_blueprint(auth_bp)
@@ -18,3 +19,4 @@ def register_routes(app):
     app.register_blueprint(chat_routes)
     app.register_blueprint(course_routes)
     app.register_blueprint(file_routes)
+    app.register_blueprint(request_routes)

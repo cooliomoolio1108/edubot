@@ -1,7 +1,7 @@
 import os
 from flask import Blueprint, jsonify, request
-from services.file_services import find_files, find_files_by_course, save_files_to_db, find_file_by_id, embed_single_file, delete_file_by_id, delete_embed, find_embeds
-from services.gcp_services import open_pdf_from_gcp_stream, upload_file_to_gcp
+from services.file_services import find_files, find_files_by_course, submit_files_to_db, find_file_by_id, embed_single_file, delete_file_by_id, delete_embed, find_embeds
+from services.gcp_services import open_pdf_from_gcp_stream, upload_file_to_gcp, view_file as gcp_view_file
 from models.file import File
 from utils.validators import success_response, fail_response, error_response
 from pydantic import ValidationError
@@ -18,6 +18,7 @@ DOCUMENTS_DIR = os.path.join(BASE_DIR, "backend", "documents")
 file_routes = Blueprint("file", __name__)
 
 @file_routes.route("/files", methods=["GET"])
+@require_auth
 def fetch_files():
     try:
         course_id = request.args.get("course_id")
@@ -47,7 +48,33 @@ def fetch_files():
     except Exception as e:
         return error_response(e)
 
+@file_routes.route("/files/view", methods=["GET"])
+@require_auth
+def view_file_route():
+    """
+    Route to generate a temporary signed URL for a GCP file.
+    """
+    try:
+        blob_path = request.args.get("path")
+
+        if not blob_path:
+            return fail_response("Missing 'path' query parameter", 400)
+
+        result = gcp_view_file(blob_path)
+        if not result.get("url"):
+            return fail_response("Failed to generate signed URL", 500)
+
+        return success_response({
+            "url": result["url"],
+            "expires_in": "30 minutes",
+            "path": blob_path
+        })
+
+    except Exception as e:
+        return error_response(f"Error generating signed URL: {str(e)}")
+
 @file_routes.route("/files", methods=["POST"])
+@require_auth
 def receive_file():
     uploaded = request.files.get("file")
 
@@ -77,10 +104,11 @@ def receive_file():
     metadata["path"] = gcp_path
     metadata["embedded"] = False
 
-    result = save_files_to_db(metadata)
+    result = submit_files_to_db(metadata)
     return jsonify({'result': result})
 
 @file_routes.route("/files/<id>", methods=["DELETE"])
+@require_auth
 def delete_file(id):
     try:
         result = delete_file_by_id(id)
@@ -124,8 +152,10 @@ def embed_file():
 def fetch_embeds():
     try:
         all_data = find_embeds()
+        print("Type:",type(all_data))
         if not all_data["ids"]:
             return fail_response("Empty ChromaDB", 404)
         return success_response(all_data)
     except Exception as e:
+        print(e)
         return error_response(e)

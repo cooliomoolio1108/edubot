@@ -29,8 +29,23 @@ def require_auth(f):
         return f(*args, **kwargs)
     return decorated
 
+def require_role(*roles):
+    def decorator(f):
+        @wraps(f)
+        def decorated(*args, **kwargs):
+            user = getattr(g, "current_user", None)
+            if not user:
+                return fail_response("Unauthenticated access.", 401)
+            
+            user_role = user.get("role")
+            if user_role not in roles:
+                return fail_response(f"Access denied. Required role(s): {', '.join(roles)}", 403)
+            
+            return f(*args, **kwargs)
+        return decorated
+    return decorator
+
 def upsert_user_from_payload(db, payload: dict) -> dict:
-    print("Claims in function:", payload)
     oid   = payload.get("oid")
     email = (payload.get("preferred_username") or payload.get("email") or "").lower()
     name  = payload.get("name") or ""
@@ -77,7 +92,8 @@ def upsert_user_from_payload(db, payload: dict) -> dict:
         "is_active": True,
         "status": "active",
         "created_at": now,
-        "last_login": now
+        "last_login": now,
+        "updated_at": now
     }
     res = db.insert_one(doc)
     doc["_id"] = str(res.inserted_id)

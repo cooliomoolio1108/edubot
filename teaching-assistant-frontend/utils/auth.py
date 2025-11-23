@@ -9,9 +9,6 @@ from typing import Callable
 load_dotenv()
 JWT_SECRET = os.getenv("JWT_SECRET")
 
-def header(jwt):
-    return {"Authorization": f"Bearer {jwt}"}
-
 def decode_jwt(token):
     try:
         return jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
@@ -37,13 +34,14 @@ def bootstrap_and_persist():
             st.session_state["login_token"] = cookie
             st.session_state["user"] = claims
             st.session_state["logged_in"] = True
-            st.session_state.user["last_login"] = datetime.utcnow()
+            st.session_state.user["last_login"] = datetime.now()
             st.rerun()
         else:
             controller.remove("login_token")
-    # Case 2: cookie already persisted in session (normal flow)
     elif "login_token" in st.session_state:
         st.session_state["logged_in"] = True
+    else:
+        allCookies = controller.getAll()
 
 def require_login(login_url=os.getenv("FLASK_LOGIN")):
     bootstrap_and_persist()

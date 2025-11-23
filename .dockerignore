@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+.venv/
+.git/
+.env
+chroma_langchain_db
+.git*
+**/*.pyc
+.venv/e

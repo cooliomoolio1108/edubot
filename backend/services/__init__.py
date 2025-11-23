@@ -9,7 +9,14 @@ from pymongo.errors import PyMongoError
 from bson import ObjectId
 from bson.errors import InvalidId
 from typing import List, Type
+from flask import g
 load_dotenv()
+
+def get_user_id():
+    user_id = g.current_user.get("_id")
+    if user_id:
+        return str(user_id)
+    return None
 
 def check_connection():
     try:
@@ -27,17 +34,19 @@ def serialize_id(doc):
 def clean_data(data: Dict, Model: Type[BaseModel]) -> Dict:
     """Validate a single dict against a Pydantic model."""
     try:
-        return Model(**data).dict(by_alias=True)
+        validated = Model.model_validate(data)
+        cleaned = validated.model_dump(by_alias=True, exclude_none=True)
+        return cleaned
     except Exception as e:
         return {}
 
-def receive_one(db_collection: Collection, data: dict):
+def receive_one(db_collection: Collection, data: dict, Model: Type[BaseModel]):
     try:
         if "timestamp" not in data:
             data["timestamp"] = datetime.utcnow()
-        # cleaned_data = clean_data(data)
+        cleaned_data = clean_data(data, Model)
 
-        result = db_collection.insert_one(data)
+        result = db_collection.insert_one(cleaned_data)
 
         if result.acknowledged:
             return {

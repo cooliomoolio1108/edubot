@@ -20,7 +20,9 @@ if "embedding_done" not in st.session_state:
 def render_pdf():
     st.image("assets/pdf.svg")
 
-def upload_file(course):
+def upload_file(course: dict):
+    if isinstance(course, str):
+        return
     course_name = course.get("course_name", "")
     course_id = course.get("_id", "")
     st.write(f'### Files')
@@ -53,9 +55,12 @@ def upload_file(course):
             st.session_state.upload_done = False
             st.rerun()
 
-def display_file(course):
+def display_file(course: dict):
+    if not isinstance(course, dict):
+        return
     needed_columns = ['file_name', "file_size", "_id"]
     course_id = course.get("_id", "")
+    print(course_id)
     files = get_files(course_id)
     if files:
         df = pd.DataFrame(files)
@@ -96,4 +101,8 @@ def display_file(course):
                     time.sleep(3)
                     st.rerun()
     else:
-        empty_display.render()
+        empty_display.render("No Files", "files_embed")
+
+def display_embeds(courseid):
+    embeds = get_embeds()
+    st.write(embeds)

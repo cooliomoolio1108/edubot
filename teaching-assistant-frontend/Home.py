@@ -12,7 +12,7 @@ from components.dashboard_card import dashboard_card
 from components import dashboard_cards_function as card
 from components import background
 import os
-
+# debug_session_state()
 # --- Setup ---
 if "user" not in st.session_state:
     st.session_state["user"] = {"role": "student"}
@@ -25,7 +25,7 @@ st.set_page_config(
 inject_custom_css()
 bootstrap_and_persist()
 load_dotenv()
-authenticated_menu()
+authenticated_menu(True)
 background.render()
 
 # --- Helpers ---
@@ -67,8 +67,9 @@ FLASK_LOGIN = os.getenv("FLASK_LOGIN")
 if st.session_state.get("logged_in"):
     oid = st.session_state["user"]["oid"] or ""
     user = get_user(oid, by="oid")
-    st.session_state["user"]["role"] = user.get("role", "nil")
-    role = st.session_state["user"]["role"]
+    if isinstance(user, dict):
+        st.session_state["user"]["role"] = user.get("role", "nil")
+        role = st.session_state["user"]["role"]
 
     st.markdown(
         f"# Welcome, <span style='color:green'>{st.session_state['user']['name']}</span>",

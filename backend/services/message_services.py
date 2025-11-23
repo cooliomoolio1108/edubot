@@ -1,12 +1,12 @@
 from database import message_collection
 from . import serialize_id, receive_one
 from datetime import datetime
+from models.message import Message
 
-window = 8
+window = 100
 
 def submit_chat_message(message_data):
-    print("Message Data:", message_data)
-    result = receive_one(message_collection, message_data)
+    result = receive_one(message_collection, message_data, Message)
     return result
 
 def get_chat_message():

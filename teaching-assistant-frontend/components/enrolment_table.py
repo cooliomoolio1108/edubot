@@ -49,7 +49,7 @@ def render_enrolment():
     edited_df = st.data_editor(
         df,
         num_rows="dynamic",
-        use_container_width=True,
+        width="stretch",
         column_config={
             "username": st.column_config.TextColumn("User Name", required=True),
             "course_name": st.column_config.TextColumn("Course Name", required=True),

@@ -8,11 +8,12 @@ def show_files():
     # st.link_button(label="click", url=link)
     preview_popup.render()
 
-def render(idx, msg):
+def render(idx, msg, convo_id):
+
     col1, col2, col3, col4, _ = st.columns([1,1,1,1, 40])
     with col1:
         if st.button("⭐", key=f'feedback_{idx}', type='tertiary', help="Help us improve replies! Leave a Feedback!"):
-            feedback_popup.render(idx, msg)
+            feedback_popup.render(idx, msg, convo_id)
     with col2:
         if st.button('📝', key=f'sources_{idx}', type='tertiary',help="Click me to view sources mentioned in the assistant's reply"):
             show_files()

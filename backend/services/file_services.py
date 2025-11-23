@@ -14,14 +14,28 @@ vector_store = get_vector_store()
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 DOCUMENTS_DIR = os.path.join(BASE_DIR, "backend", "documents")
 os.makedirs(DOCUMENTS_DIR, exist_ok=True)
+import numpy as np
+
+def make_json_safe(obj):
+    if isinstance(obj, np.ndarray):
+        return obj.tolist()
+    if isinstance(obj, (np.float32, np.float64)):
+        return float(obj)
+    if isinstance(obj, dict):
+        return {k: make_json_safe(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [make_json_safe(x) for x in obj]
+    return obj
 
 def find_files():
     files = file_collection.find()
     return [serialize_id(f) for f in files]
 
 def find_files_by_course(course_id: str):
+    print("This is the cid:", course_id)
     results = list(file_collection.find({"course_id": course_id}))
     cleaned = [serialize_id(file) for file in results]
+    print(cleaned)
     return cleaned
 
 def find_file_by_id(id):
@@ -32,7 +46,7 @@ def find_file_by_file_id(file_id):
     file_doc = file_collection.find_one({"file_id": file_id})
     return serialize_id(file_doc)
 
-def save_files_to_db(data):
+def submit_files_to_db(data):
     def process(doc):
         return File(**doc).dict(by_alias=True, exclude_none=True)
 
@@ -105,9 +119,11 @@ def find_embed_by_course(course_id):
 def find_embeds():
     chroma_collection = vector_store._collection
     all_data = chroma_collection.get(include=['documents', 'embeddings', 'metadatas'])
-    print(all_data)
-    return all_data
+    return make_json_safe(all_data)
 
 def delete_file_by_id(id):
     delete_result = file_collection.delete_one({"_id": ObjectId(id)})
     return delete_result.deleted_count
+
+def display_file(file_path):
+    return view_file()

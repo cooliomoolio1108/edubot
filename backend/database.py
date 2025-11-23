@@ -1,4 +1,4 @@
-from pymongo import MongoClient
+from pymongo import MongoClient, ASCENDING
 import os
 from dotenv import load_dotenv
 from datetime import datetime
@@ -21,23 +21,25 @@ chat_collection = db["chat"]
 course_collection = db["course"]
 file_collection = db["file"]
 prompt_collection = db["prompt"]
+req_category_collection = db["req_category"]
+issue_collection = db["issue"]
 
-def seed_courses():
-    course = {
-        "course_name": "Multi-Disciplinary Project",
-        "course_code": "CS102",
-        "coordinator": "Prof. Benjamin Lee",
-        "sem": "1",
-        "created_at": datetime.fromisoformat("2025-08-25T09:00:00"),
-        "is_active": True,
-    }
+# def seed_courses():
+#     course = {
+#         "course_name": "Multi-Disciplinary Project",
+#         "course_code": "CS102",
+#         "coordinator": "Prof. Benjamin Lee",
+#         "sem": "1",
+#         "created_at": datetime.fromisoformat("2025-08-25T09:00:00"),
+#         "is_active": True,
+#     }
 
-    existing = course_collection.find_one({"course_code": course["course_code"]})
-    if not existing:
-        course_collection.insert_one(course)
-        print(f"✅ Seeded course: {course['course_code']}")
-    else:
-        print(f"⚡ Course already exists: {existing['course_code']}")
+#     existing = course_collection.find_one({"course_code": course["course_code"]})
+#     if not existing:
+#         course_collection.insert_one(course)
+#         print(f"✅ Seeded course: {course['course_code']}")
+#     else:
+#         print(f"⚡ Course already exists: {existing['course_code']}")
 
 
 def seed_users():
@@ -60,8 +62,20 @@ def seed_users():
     else:
         print(f"⚡ User already exists: {existing['email']}")
 
+def ensure_indexes():
+    # Courses → course_code should be unique
+    course_collection.create_index([("course_code", ASCENDING)], unique=True)
 
-seed_courses()
+    # Request categories → name should be unique
+    req_category_collection.create_index([("name", ASCENDING)], unique=True)
+    req_category_collection.create_index([("color", ASCENDING)], unique=True)
+
+    # Issues → optional (title or combo constraints)
+    issue_collection.create_index([("title", ASCENDING)], unique=False)
+    print("✅ Indexes ensured")
+
+# seed_courses()
 seed_users()
+ensure_indexes()
 print("🎉 Database seeding complete")
 print(course_collection.count_documents({}))

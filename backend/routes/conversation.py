@@ -1,24 +1,37 @@
-from flask import Blueprint, request, jsonify
+from flask import g, Blueprint, request, jsonify
+from models.conversation import Conversation
 from rag.services.openai_service import generate_title_for_chat, get_openai_response
-from services.conversation_services import submit_chat_message, get_chat_message, get_convos, edit_title, delete_convo
-from services.message_services import get_chat_message, get_chat_message_by_convoid, delete_message
+from services.conversation_services import insert_convo, get_convos, edit_title, delete_convo, edit_convo
+from services.message_services import get_chat_message_by_convoid, delete_message
+from utils.auth_check import require_auth
+from utils.validators import success_response, fail_response, error_response
 
 conversation_routes = Blueprint("conversation", __name__)
 
 @conversation_routes.route("/conversation", methods=["POST"])
+@require_auth
 def receive_conversation():
     data = request.get_json()
-    convo_result = submit_chat_message(data)
-    return jsonify({"message": "Convo submitted", "conversation_id": str(convo_result.inserted_id)}), 201
+    user = g.current_user
+    convo_data = {
+        "title": data.get("title"),
+        "user_id": user.get("_id"),
+        "course_id": data.get("course_id"),
+    }
+    convo_result = insert_convo(convo_data)
+    if not convo_result:
+        return fail_response("fail")
+    return success_response(convo_result.inserted_id)
 
 @conversation_routes.route("/conversation", methods=["GET"])
+@require_auth
 def get_conversation():
     chat_message = get_convos()
     return jsonify(chat_message)
 
 @conversation_routes.route("/generate_title", methods=["POST"])
+@require_auth
 def generate_title():
-    print("generatea")
     data = request.get_json()
     convo_id = data.get("conversation_id")
 
@@ -38,6 +51,7 @@ def generate_title():
         return jsonify({"error": str(e)}), 500
 
 @conversation_routes.route("/conversation/<convo_id>", methods=["DELETE"])
+@require_auth
 def delete_conversation(convo_id):
     delete_messages = delete_message(convo_id)
     if delete_messages:
@@ -46,3 +60,15 @@ def delete_conversation(convo_id):
             return jsonify({'status': 'success'}), 200
         return  jsonify({'error': 'Conversation not deleted'}), 404
     return jsonify({'error': 'Messages and Conversation not deleted'}), 404
+
+@conversation_routes.route("/conversation/<convo_id>", methods=["PUT"])
+@require_auth
+def update_conversation(convo_id):
+    data = request.get_json()
+    if not data:
+        return fail_response("No data provided", 400)
+    success = edit_convo(convo_id, data)
+    if success:
+        return success_response("Conversation updated successfully")
+    else:
+        return fail_response("Failed to update conversation", 500)

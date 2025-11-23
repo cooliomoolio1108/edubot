@@ -2,11 +2,13 @@ from flask import Blueprint, jsonify, request
 from services.user_services import get_user, create_user, get_users, delete_user_from_db, edit_user_from_db, get_user_by_oid
 from models.user import User
 from utils.validators import success_response, fail_response, error_response
+from utils.auth_check import require_auth
 from pydantic import ValidationError
 
 user_routes = Blueprint("user", __name__)
 
 @user_routes.route("/users/<id>", methods=["GET"])
+@require_auth
 def fetch_user(id):
     try:
         user_doc = get_user(id)
@@ -20,6 +22,7 @@ def fetch_user(id):
         return error_response(e)
     
 @user_routes.route("/users/oid/<oid>", methods=["GET"])
+@require_auth
 def fetch_user_by_oid(oid):
     try:
         user_doc = get_user_by_oid(oid)
@@ -33,6 +36,7 @@ def fetch_user_by_oid(oid):
         return error_response(e)
 
 @user_routes.route("/users", methods=["POST"])
+@require_auth
 def add_user():
     data = request.json
     try:
@@ -57,6 +61,7 @@ def add_user():
         return error_response(e, 500)
 
 @user_routes.route("/users", methods=["GET"])
+@require_auth
 def fetch_all_users():
     try:
         data = get_users()
@@ -77,6 +82,7 @@ def fetch_all_users():
         return error_response(e, 500)
 
 @user_routes.route("/users/<id>", methods=["DELETE"])
+@require_auth
 def delete_user(id):
     try:
         result = delete_user_from_db(id)
@@ -87,6 +93,7 @@ def delete_user(id):
         return error_response(e)
 
 @user_routes.route("/users/<id>", methods=["PUT"])
+@require_auth
 def edit_user(id):
     data = request.json
     if not isinstance(data, dict) or not isinstance(data.get("edits"), dict):
